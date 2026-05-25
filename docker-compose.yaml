@@ -1,0 +1,23 @@
+# docker-compose for local testing. Lets you simulate how the container will
+# behave in AWS without dealing with ECS/EKS config yet.
+#
+# Run with:  docker compose up --build
+# Stop with: docker compose down
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Maps host port 8080 -> container port 8080.
+      # In AWS, this mapping is done by the load balancer's target group instead.
+      - "8080:8080"
+    environment:
+      # These env vars get injected into the container.
+      # In ECS, these come from the task definition.
+      # In EKS, they come from a ConfigMap or Secret.
+      PORT: "8080"
+      APP_ENV: "local-docker"
+      LOG_LEVEL: "info"
+    restart: unless-stopped
