@@ -1,0 +1,8 @@
+# Don't ship these into the Docker build context.
+.git
+.gitignore
+README.md
+deploy/
+*.md
+.env
+.env.*
