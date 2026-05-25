@@ -1,0 +1,23 @@
+# Terraform state files — never commit these
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variable files that might contain secrets
+*.tfvars
+*.tfvars.json
+!example.tfvars
+
+# Plugin directory — re-downloaded by `terraform init`
+.terraform/
+.terraform.lock.hcl
+
+# CLI override files (used for local-only experiments)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
