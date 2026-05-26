@@ -29,3 +29,19 @@ output "ecr_repository_arn" {
   description = "ECR repository ARN (used by EC2 IAM role)"
   value       = module.ecr.repository_arn
 }
+
+#NOTE: EC2 and ALB outputs
+output "alb_dns_name" {
+  description = "Load balancer DNS — curl this to hit the API"
+  value       = module.compute.alb_dns_name
+}
+
+output "asg_name" {
+  description = "Auto Scaling Group name for the app"
+  value       = module.compute.asg_name
+}
+
+output "target_group_arn" {
+  description = "Target group ARN — useful for checking instance health"
+  value       = module.compute.target_group_arn
+}
