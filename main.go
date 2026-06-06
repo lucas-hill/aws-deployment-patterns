@@ -83,6 +83,33 @@ func main() {
 	slog.SetDefault(logger)
 
 	s := newStore()
+
+	// Build the HTTP handler. Extracted into newRouter so tests can exercise
+	// the exact same routing/handler stack without starting a real server.
+	handler := newRouter(s, appEnv)
+
+	addr := ":" + port
+	slog.Info("server starting", "addr", addr, "env", appEnv)
+
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		slog.Error("server failed", "error", err)
+		os.Exit(1)
+	}
+}
+
+// newRouter wires up the routes and returns the fully-decorated handler
+// (mux + logging middleware). Keeping this separate from main() means tests
+// can call newRouter(newStore(), "test") and drive it with httptest — no
+// network, no env vars, no goroutines to clean up.
+func newRouter(s *store, appEnv string) http.Handler {
 	mux := http.NewServeMux()
 
 	// GET / — root, just confirms the app is alive and shows env info.
@@ -123,23 +150,7 @@ func main() {
 	})
 
 	// Wrap the mux with a logging middleware so we get a log line per request.
-	handler := logRequests(mux)
-
-	addr := ":" + port
-	slog.Info("server starting", "addr", addr, "env", appEnv)
-
-	srv := &http.Server{
-		Addr:         addr,
-		Handler:      handler,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
-
-	if err := srv.ListenAndServe(); err != nil {
-		slog.Error("server failed", "error", err)
-		os.Exit(1)
-	}
+	return logRequests(mux)
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {
